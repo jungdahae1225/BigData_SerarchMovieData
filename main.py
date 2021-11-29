@@ -5,70 +5,44 @@
     f.close()
 '''
 
-'''
-각 영화 장르의 영화가 얼마나 개봉 하였는가를 분석하는 과제이다.
-설계: 각 줄의 맨 끝에 영화의 장르를 바탕으로 장르 list를 만들어 장르별 수를 셀 것.
-각 영화가 여러 장르에 속할 수 있다.
-
-
-'''
 import sys
+import datetime # 날짜를 요일로 환산하기 위함
 
-fileName = sys.argv[1]
-output = sys.argv[2]
+fileName = sys.argv[1] #입력 파일
+output = sys.argv[2]   #출력 파일
 
 f = open(fileName, "rt")
 out = open(output, "w")
+
+#f = open("uber_exp.txt", "rt")
+#out = open("output.txt", "w")
 '''
-장르와 그 수를 저장할 공간을 이차원 리스트로 만들 것임
-[장르명][개수]
-[장르명2][개수]
-[장르명3][개수]
+장르와 그 수를 저장할 공간을 4열을 가진 2차원 리스트로 만들어서 print 문에서 엮어서 파일에 쓴다,
+[region][day][vehicles][trips] 
+[region][day][vehicles][trips]
+[region][day][vehicles][trips]
 ...
 '''
 genre_lol = []
-genre_cnt = []
 
 for line in f:
-    row = line.split("::")  # ::기준으로 3번째에 장르가 나온다.
-    col = row[2]
+    line = line.strip()  # 개행 문자 제거
+    row = line.split(",")  # 쉼표를 기준으로 정보가 나뉜다.
+    col = row[1]
     # print(col) # 여기까지 디버깅o
+    col_date = col.split("/")
 
-    col = col.strip()  # 개행 문자 제거
-    genre = col.split("|")
-    for data in genre:  # data[0] data[2] ,,, 한 행의 장르 줄을 돌면서
-        if data in genre_lol:
-            genre_cnt[genre_lol.index(data)] += 1  # 리스트에 해당 장르가 이미 잇다면 해당 장르가 저장된 행의 index를 찾아 그것의 [장르][1]에 수 증가
-        else:
-            genre_lol.append(data)
-            genre_cnt.append(1)
+    # 해당 열의 요일 정보 받아오기
+    days = ['Mon', 'TUE', 'WED', 'THR', "FRI", "SAT", "SUN"]
+    day =  days[datetime.date(int(col_date[2]), int(col_date[0]), int(col_date[1])).weekday()]
+    
+    genre_lol.append([row[0], day, row[2], row[3]])
 f.close()
 
-print(genre_lol)
-print(genre_cnt)
-print(len(genre_lol))
-print(len(genre_cnt))
+#print(genre_lol)
 
-i = 0
 for i in range(0, len(genre_lol)):
-    print(genre_lol[i], genre_cnt[i], sep=" ")
-
-# 2차원 배열로 합치기
-
-result = []
-
-for l, c in zip(genre_lol, genre_cnt):
-    result.append([l, c])
-print(result)
-
-wr = ''
-
-for a in result:
-    for b in a:
-        wr = wr + str(b) + ' '
-    wr = wr.rstrip(" ")  # 마지막에도 추가되는 sep을 삭제
-    wr = wr + '\n'
-
-out.writelines(wr)
+    li = str(genre_lol[i][0]) + "," + str(genre_lol[i][1]) + " " + str(genre_lol[i][2]) + "," + str(genre_lol[i][3]) + "\n"
+    out.write(li)
 
 out.close()
